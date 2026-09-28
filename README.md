@@ -1,6 +1,6 @@
 # OS Lab Linux Environment (Minimal Ubuntu)
 
-A lightweight Docker environment mirroring Ubuntu 24.04 LTS designed specifically for Operating Systems lab exercises, system call analysis, process management, and POSIX C/C++ programming.
+A lightweight Docker environment mirroring Ubuntu 24.04 LTS designed specifically for Labs.
 
 ---
 
