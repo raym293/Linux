@@ -26,13 +26,13 @@ When you type `exit`, you return to macOS, while the container remains running i
 
 | Metric | Measured Value | Notes |
 | :--- | :--- | :--- |
-| **Download / Content Size** | **181 MB** | Compressed layers transferred over the network |
-| **Uncompressed Linux Filesystem** | **~563 MB** | Ubuntu OS rootfs + all compilers and debuggers |
-| **Total Disk Footprint in Docker** | **744 MB** | Complete image on disk including container layer |
+| **Download / Content Size** | **192 MB** | Compressed layers transferred over the network |
+| **Uncompressed Linux Filesystem** | **~595 MB** | Ubuntu OS rootfs + toolchains, debuggers & manuals |
+| **Total Disk Footprint in Docker** | **777 MB** | Complete image on disk including container layer |
 | **Host Project Directory (`/Linux`)** | **~32 KB** | Local launcher scripts and source files |
 
 ### Why not Alpine Linux (~5 MB)?
-Alpine uses `musl` libc instead of GNU `glibc`. University OS labs rely heavily on GNU glibc behavior, process memory layouts, `strace`, `valgrind`, `gettid`, `clone()`, and POSIX thread semantics. Running lab code on Alpine frequently causes subtle compilation or runtime incompatibilities. This image uses official **Ubuntu 24.04 minimal** with `--no-install-recommends` and stripped caches to deliver **100% Ubuntu parity at minimal size**.
+Alpine uses `musl` libc instead of GNU `glibc`. University OS labs rely heavily on GNU glibc behavior, process memory layouts, `strace`, `valgrind`, `gettid`, `clone()`, and POSIX thread semantics. Running lab code on Alpine frequently causes subtle compilation or runtime incompatibilities. This image uses official **Ubuntu 24.04 minimal** with restored man pages and stripped non-English caches to deliver **100% Ubuntu parity at minimal size**.
 
 ---
 
@@ -68,11 +68,15 @@ Alpine uses `musl` libc instead of GNU `glibc`. University OS labs rely heavily 
 | **`gdb`** | GNU Debugger | `gdb ./hello_os` |
 | **`valgrind`** | Memory leak detector | `valgrind --leak-check=full ./hello_os` |
 | **`procps`** | Process inspection | `ps aux`, `top`, `kill`, `free -m` |
-| **`man-db` & `manpages-dev`**| POSIX syscall manuals | `man 2 fork`, `man 2 waitpid`, `man 2 pipe` |
+| **`man-db` & `less`** | Manual pager & database | `man 2 fork`, `man 1 ls`, `man -k socket` |
+| **`manpages-*`** | Linux syscalls, POSIX & C libc manuals | `man 2 waitpid`, `man 3 pthread_create`, `man 7 signal` |
 | **`nano` / `vim-tiny`** | In-terminal text editors | `nano hello_os.c` |
 
 > [!NOTE]
-> `docker-compose.yml` includes `cap_add: [SYS_PTRACE]` and `security_opt: [seccomp:unconfined]`. These allow `strace`, `gdb`, and process inspection syscalls (`ptrace`, `clone`) to operate without "Operation not permitted" permission errors inside the container.
+> **SYS_PTRACE & Seccomp:** `docker-compose.yml` includes `cap_add: [SYS_PTRACE]` and `security_opt: [seccomp:unconfined]`. These allow `strace`, `gdb`, and process inspection syscalls (`ptrace`, `clone`) to operate without "Operation not permitted" permission errors inside the container.
+
+> [!TIP]
+> **Complete Manual Pages in Minimal Ubuntu:** Ubuntu minimal images suppress manual pages by default via dpkg exclusions and divert `/usr/bin/man` to a stub script. This image removes those restrictions, installs complete Linux system call (`manpages-dev`), POSIX standard (`manpages-posix`, `manpages-posix-dev`), and user command manuals, installs `less` as the interactive pager, and indexes the manual database with `mandb -c` while stripping non-English translations to preserve the lightweight footprint.
 
 ---
 
@@ -94,9 +98,19 @@ make trace
 # Run with Valgrind to check for memory leaks
 make check-mem
 
-# Read Linux system call documentation
+# Read Linux system call manuals (Section 2)
 man 2 fork
 man 2 waitpid
+man 2 pipe
+
+# Read C library and POSIX threads documentation (Section 3)
+man 3 malloc
+man 3 pthread_create
+
+# Read command & system overview manuals (Sections 1 & 7)
+man 1 ls
+man 1 gcc
+man 7 signal
 ```
 
 ---
