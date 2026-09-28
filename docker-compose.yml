@@ -1,0 +1,18 @@
+services:
+  os-lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: os-lab-ubuntu:minimal
+    container_name: os-lab-env
+    stdin_open: true
+    tty: true
+    working_dir: /workspace
+    volumes:
+      - ./src:/workspace
+    # Essential for OS labs: allow gdb, strace, and syscall inspection inside the container
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    restart: unless-stopped
